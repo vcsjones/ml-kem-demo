@@ -1,0 +1,19 @@
+{
+	"name": "Standard configuration",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"hostRequirements": {
+		"cpus": 4,
+		"memory": "8gb"
+	},
+
+	"features": {
+		"ghcr.io/devcontainers/features/github-cli:1": {}
+	},
+	"containerEnv": {
+		"LD_LIBRARY_PATH": "/opt/openssl:${containerEnv:LD_LIBRARY_PATH}",
+		"PATH": "/opt/openssl:${containerEnv:PATH}",
+		"DOTNET_MULTILEVEL_LOOKUP": "0"
+	}
+}
