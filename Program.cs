@@ -61,6 +61,7 @@ else if (args is ["penny"]) {
 
     do
     {
+        Console.WriteLine();
         // Encapsulate a ciphertext with vince's encapsulation key
         byte[] ciphertext = kem.Encapsulate(out byte[] sharedSecret);
 
@@ -70,10 +71,11 @@ else if (args is ["penny"]) {
         pipe.Write(ciphertext);
         Console.WriteLine("Sent ciphertext.");
         Console.WriteLine($"Shared secret: {Convert.ToHexString(sharedSecret)}");
-        Console.WriteLine("Again?");
+        Console.Write("Again? [yY]");
     }
     while (Console.ReadKey(true) is { KeyChar: 'y' or 'Y' });
 
+    Console.WriteLine();
     Console.WriteLine("Done.");
 }
 else {
