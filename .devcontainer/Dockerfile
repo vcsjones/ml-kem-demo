@@ -11,3 +11,8 @@ RUN mkdir -p $TMPDIR/openssl-build && cd $TMPDIR/openssl-build && \
     make -j $(nproc) && \
     make install_sw && \
     cd ~ && rm -rf $TMPDIR/openssl-build
+
+RUN mkdir -p /opt/dotnet && \
+curl --output $TMPDIR/dotnet.tar.gz -SsL https://aka.ms/dotnet/10.0.1xx/daily/dotnet-sdk-linux-x64.tar.gz && \
+tar -xf dotnet.tar.gz -C /opt/dotnet && \
+rm $TMPDIR/dotnet.tar.gz
