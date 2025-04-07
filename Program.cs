@@ -7,20 +7,30 @@ const string PipeName = "mlkem-pipe";
 
 if (args is ["vince"]) {
     Console.WriteLine($"Generating {algorithm.Name} key...");
+
+    // Generate an ML-KEM key
     using MLKem kem = MLKem.GenerateKey(algorithm);
+
+    // Get the (public) encapsulation key.
     byte[] encapsulationKey = kem.ExportEncapsulationKey();
+
     Console.WriteLine($"Encapsulation Key SHA-2-256: {Convert.ToHexString(SHA256.HashData(encapsulationKey))}");
     Console.WriteLine("Waiting for penny to receive encapsulation key...");
 
     using NamedPipeServerStream pipe = new(PipeName, PipeDirection.InOut, 1);
     await pipe.WaitForConnectionAsync();
+
+    // Send the encapsulation key to penny
     pipe.Write(encapsulationKey);
 
     Console.WriteLine("Waiting for penny's ciphertext...");
     byte[] ciphertext = new byte[algorithm.CiphertextSizeInBytes];
+
+    // Get the ciphertext from penny
     pipe.ReadExactly(ciphertext);
     Console.WriteLine($"Received penny's ciphertext: {Convert.ToHexString(ciphertext)}");
 
+    // Decapsulate the ciphertext that penny made.
     byte[] sharedSecret = kem.Decapsulate(ciphertext);
     Console.WriteLine($"Shared secret: {Convert.ToHexString(sharedSecret)}");
 }
@@ -32,14 +42,20 @@ else if (args is ["penny"]) {
     pipe.ReadExactly(encapsulationKey);
     Console.WriteLine($"Encapsulation Key SHA-2-256: {Convert.ToHexString(SHA256.HashData(encapsulationKey))}");
     Console.WriteLine("Encapsulating...");
+
+    // Get the encapsulation key from vince
     using MLKem kem = MLKem.ImportEncapsulationKey(algorithm, encapsulationKey);
+
+    // Encapsulate a ciphertext with vince's encapsulation key
     byte[] ciphertext = kem.Encapsulate(out byte[] sharedSecret);
 
     Console.WriteLine($"Sending ciphertext to vince: {Convert.ToHexString(ciphertext)}");
+
+    // Sent the ciphertext back to vince.
     pipe.Write(ciphertext);
     Console.WriteLine("Sent ciphertext.");
     Console.WriteLine($"Shared secret: {Convert.ToHexString(sharedSecret)}");
 }
 else {
-    Console.WriteLine("Run as either. 'vince' or 'penny'.");
+    Console.WriteLine("Run as either 'vince' or 'penny'.");
 }
