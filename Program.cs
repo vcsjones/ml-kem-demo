@@ -6,7 +6,7 @@ MLKemAlgorithm algorithm = MLKemAlgorithm.MLKem768;
 const string PipeName = "mlkem-pipe";
 
 if (args is ["vince"]) {
-    Console.WriteLine("Generating ML-KEM-768 key...");
+    Console.WriteLine($"Generating {algorithm.Name} key...");
     using MLKem kem = MLKem.GenerateKey(algorithm);
     byte[] encapsulationKey = kem.ExportEncapsulationKey();
     Console.WriteLine($"Encapsulation Key SHA-2-256: {Convert.ToHexString(SHA256.HashData(encapsulationKey))}");
@@ -26,8 +26,8 @@ if (args is ["vince"]) {
 }
 else if (args is ["penny"]) {
     using NamedPipeClientStream pipe = new(".", PipeName, PipeDirection.InOut);
-    await pipe.ConnectAsync();
     Console.WriteLine("Receiving encapsulation key...");
+    await pipe.ConnectAsync();
     byte[] encapsulationKey = new byte[algorithm.EncapsulationKeySizeInBytes];
     pipe.ReadExactly(encapsulationKey);
     Console.WriteLine($"Encapsulation Key SHA-2-256: {Convert.ToHexString(SHA256.HashData(encapsulationKey))}");
