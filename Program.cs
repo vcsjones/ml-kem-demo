@@ -26,13 +26,26 @@ if (args is ["vince"]) {
     Console.WriteLine("Waiting for penny's ciphertext...");
     byte[] ciphertext = new byte[algorithm.CiphertextSizeInBytes];
 
-    // Get the ciphertext from penny
-    pipe.ReadExactly(ciphertext);
-    Console.WriteLine($"Received penny's ciphertext: {Convert.ToHexString(ciphertext)}");
+    while (pipe.IsConnected)
+    {
+        try
+        {
+            // Get the ciphertext from penny
+            pipe.ReadExactly(ciphertext);
+            Console.WriteLine($"Received penny's ciphertext: {Convert.ToHexString(ciphertext)}");
 
-    // Decapsulate the ciphertext that penny made.
-    byte[] sharedSecret = kem.Decapsulate(ciphertext);
-    Console.WriteLine($"Shared secret: {Convert.ToHexString(sharedSecret)}");
+            // Decapsulate the ciphertext that penny made.
+            byte[] sharedSecret = kem.Decapsulate(ciphertext);
+            Console.WriteLine($"Shared secret: {Convert.ToHexString(sharedSecret)}");
+            Console.WriteLine("Waiting for penny to send more.");
+        }
+        catch (EndOfStreamException)
+        {
+            break;
+        }
+    }
+
+    Console.WriteLine("penny is done.");
 }
 else if (args is ["penny"]) {
     using NamedPipeClientStream pipe = new(".", PipeName, PipeDirection.InOut);
@@ -46,15 +59,22 @@ else if (args is ["penny"]) {
     // Get the encapsulation key from vince
     using MLKem kem = MLKem.ImportEncapsulationKey(algorithm, encapsulationKey);
 
-    // Encapsulate a ciphertext with vince's encapsulation key
-    byte[] ciphertext = kem.Encapsulate(out byte[] sharedSecret);
+    do
+    {
+        // Encapsulate a ciphertext with vince's encapsulation key
+        byte[] ciphertext = kem.Encapsulate(out byte[] sharedSecret);
 
-    Console.WriteLine($"Sending ciphertext to vince: {Convert.ToHexString(ciphertext)}");
+        Console.WriteLine($"Sending ciphertext to vince: {Convert.ToHexString(ciphertext)}");
 
-    // Sent the ciphertext back to vince.
-    pipe.Write(ciphertext);
-    Console.WriteLine("Sent ciphertext.");
-    Console.WriteLine($"Shared secret: {Convert.ToHexString(sharedSecret)}");
+        // Sent the ciphertext back to vince.
+        pipe.Write(ciphertext);
+        Console.WriteLine("Sent ciphertext.");
+        Console.WriteLine($"Shared secret: {Convert.ToHexString(sharedSecret)}");
+        Console.WriteLine("Again?");
+    }
+    while (Console.ReadKey(true) is { KeyChar: 'y' or 'Y' });
+
+    Console.WriteLine("Done.");
 }
 else {
     Console.WriteLine("Run as either 'vince' or 'penny'.");
