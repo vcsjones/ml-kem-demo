@@ -12,8 +12,8 @@
 		"ghcr.io/devcontainers/features/github-cli:1": {}
 	},
 	"remoteEnv": {
-		"LD_LIBRARY_PATH": "/opt/openssl:${containerEnv:LD_LIBRARY_PATH}",
-		"PATH": "/opt/openssl:${containerEnv:PATH}",
+		"LD_LIBRARY_PATH": "/opt/openssl/lib64:${containerEnv:LD_LIBRARY_PATH}",
+		"PATH": "/opt/openssl/bin:${containerEnv:PATH}",
 		"DOTNET_MULTILEVEL_LOOKUP": "0"
 	}
 }
