@@ -26,10 +26,8 @@ if (args is ["vince"]) {
     Console.WriteLine("Waiting for penny's ciphertext...");
     byte[] ciphertext = new byte[algorithm.CiphertextSizeInBytes];
 
-    while (pipe.IsConnected)
-    {
-        try
-        {
+    while (pipe.IsConnected) {
+        try {
             // Get the ciphertext from penny
             pipe.ReadExactly(ciphertext);
             Console.WriteLine($"Received penny's ciphertext: {Convert.ToHexString(ciphertext)}");
@@ -39,8 +37,7 @@ if (args is ["vince"]) {
             Console.WriteLine($"Shared secret: {Convert.ToHexString(sharedSecret)}");
             Console.WriteLine("Waiting for penny to send more.");
         }
-        catch (EndOfStreamException)
-        {
+        catch (EndOfStreamException) {
             break;
         }
     }
@@ -59,8 +56,7 @@ else if (args is ["penny"]) {
     // Get the encapsulation key from vince
     using MLKem kem = MLKem.ImportEncapsulationKey(algorithm, encapsulationKey);
 
-    do
-    {
+    do {
         Console.WriteLine();
         // Encapsulate a ciphertext with vince's encapsulation key
         kem.Encapsulate(out byte[] ciphertext, out byte[] sharedSecret);
