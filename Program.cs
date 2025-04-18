@@ -63,7 +63,7 @@ else if (args is ["penny"]) {
     {
         Console.WriteLine();
         // Encapsulate a ciphertext with vince's encapsulation key
-        byte[] ciphertext = kem.Encapsulate(out byte[] sharedSecret);
+        kem.Encapsulate(out byte[] ciphertext, out byte[] sharedSecret);
 
         Console.WriteLine($"Sending ciphertext to vince: {Convert.ToHexString(ciphertext)}");
 
