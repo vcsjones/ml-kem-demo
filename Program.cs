@@ -6,6 +6,7 @@ MLKemAlgorithm algorithm = MLKemAlgorithm.MLKem768;
 const string PipeName = "mlkem-pipe";
 
 if (args is ["vince"]) {
+    using IDisposable _ = EnsureRunningOnceAs("vince");
     Console.WriteLine($"Generating {algorithm.Name} key...");
 
     // Generate an ML-KEM key
@@ -45,6 +46,7 @@ if (args is ["vince"]) {
     Console.WriteLine("penny is done.");
 }
 else if (args is ["penny"]) {
+    using IDisposable _ = EnsureRunningOnceAs("penny");
     using NamedPipeClientStream pipe = new(".", PipeName, PipeDirection.InOut);
     Console.WriteLine("Receiving encapsulation key...");
     await pipe.ConnectAsync();
@@ -76,4 +78,17 @@ else if (args is ["penny"]) {
 }
 else {
     Console.WriteLine("Run as either 'vince' or 'penny'.");
+}
+
+
+IDisposable EnsureRunningOnceAs(string user) {
+    string mutexName = $"Global\\MLKemDemo_{user}";
+    Mutex mutex = new Mutex(initiallyOwned: true, name: mutexName, out bool createdNew);
+
+    if (!createdNew) {
+        Console.WriteLine($"Another instance of the program is already running as '{user}'.");
+        Environment.Exit(1);
+    }
+
+    return mutex;
 }
